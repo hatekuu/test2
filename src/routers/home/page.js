@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useEffect,useState} from 'react'
 import *as Realm from 'realm-web'
 import Form from '@rjsf/core';
 import validator from '@rjsf/validator-ajv8';
@@ -25,8 +25,24 @@ const Login = {
       password: { type: 'string', title: 'Password', minLength: 6 ,format:'password'},
     },
   };
-  
+
 const Home = () => {
+  const [Sum,SetSum]= useState({});
+  const [total,setTotal]= useState()
+  useEffect(()=>{
+  fetchData()
+  },[])
+  const fetchData = async()=>{
+    const funtionName="module"
+    try {
+      const res= await user.callFunction(funtionName)
+      SetSum(res[0]?.public?.input?.jsonSchema)
+    
+   
+    } catch (error) {
+      console.log(error.error)
+    }
+  }
     const Register = async (form)=>{
         const {email,password}= form?.formData
        try {
@@ -35,9 +51,7 @@ const Home = () => {
         window.location.reload(true)
        } catch (error) {
         console.log(error.error)
-       }
-     
-       
+       }    
     }
     const Loginn = async (form)=>{
         const {email,password}= form?.formData
@@ -51,7 +65,6 @@ const Home = () => {
         console.log(error.error)
        }
     }
- 
     const logOut = async ()=>{
    
        try {
@@ -62,25 +75,35 @@ const Home = () => {
         console.log(error.error)
        }
     }
-    const GetValue = async ()=>{
-        const functionName = "get";
 
-try {
-                const result = await user.callFunction(functionName);
-                 console.log(result)
-} catch (error) {
+const OnSum = async(form)=>{
+  const funtionName="SUMAB"
+  const args=[form?.formData,user.id]
+  try {
+    const res= await user.callFunction(funtionName, ...args)
+    console.log(res)
+    setTotal(res[0]?.public?.output?.total)
+    console.log(res[0]?.public?.output?.total)
+  } catch (error) {
     console.log(error.error)
+  }
 }
-
-
-    }
+    
   return (
     <div>
         {user?(
             <div>home
                 <button onClick={logOut}>Đăng xuất</button>
-                <button onClick={GetValue}>GỌI funtion</button>
-            </div>
+                <Form
+            schema={Sum}
+            validator={validator}
+           
+            onSubmit={OnSum}
+        
+          />
+         <p>kết quả là:{total}</p>
+     
+         </div>
         ):(
             <>
             <Form
